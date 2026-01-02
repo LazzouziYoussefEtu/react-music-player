@@ -12,6 +12,8 @@ export const MusicPlayerProvider = ({ children }) => {
     const [progress, setProgress] = useState(0); 
     const [volume, setVolume] = useState(0); 
     const [duration, setDuration] = useState(0);
+    const [scanPath, setScanPath] = useState(localStorage.getItem('musicPath') || '');
+    const [isScanning, setIsScanning] = useState(false);
 
     const currentMusicItemRef = useRef(null);
     useEffect(() => { currentMusicItemRef.current = currentMusicItem; }, [currentMusicItem]);
