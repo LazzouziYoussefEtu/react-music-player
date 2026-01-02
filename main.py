@@ -57,6 +57,13 @@ class UpdateCoverRequest(BaseModel):
     id: int
     cover: str
 
+class DownloadRequest(BaseModel):
+    videoId: str
+    title: str
+    artist: str
+    cover: str
+    dirPath: str
+
 def find_mp3_files(directory: str) -> List[str]:
     file_list = []
     try:
@@ -149,7 +156,8 @@ async def search_online(q: str):
                 "artist": ", ".join([a['name'] for a in s['artists']]),
                 "file": f"http://localhost:8080/api/stream-online/{s['videoId']}",
                 "cover": s['thumbnails'][-1]['url'],
-                "isOnline": True
+                "isOnline": True,
+                "videoId": s['videoId']
             })
         return online_songs
     except Exception as e:
@@ -172,6 +180,37 @@ async def stream_online(video_id: str):
         loop = asyncio.get_event_loop()
         stream_url = await loop.run_in_executor(None, get_stream_url)
         return RedirectResponse(url=stream_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/download")
+async def download_song(request: DownloadRequest):
+    if not os.path.exists(request.dirPath):
+        raise HTTPException(status_code=400, detail="Invalid directory path")
+
+    file_path = os.path.join(request.dirPath, f"{request.title}.mp3")
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': file_path,
+        'quiet': True,
+        'no_warnings': True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([f"https://www.youtube.com/watch?v={request.videoId}"])
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO music (title, artist, file_path, cover) VALUES (?, ?, ?, ?)",
+            (request.title, request.artist, file_path, request.cover)
+        )
+        conn.commit()
+        conn.close()
+
+        return {"message": "Song downloaded and added to library."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -226,4 +265,3 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
-

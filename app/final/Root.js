@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { HashRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { MusicPlayerProvider } from './context/MusicPlayerProvider';
 import { MusicPlayerContext } from './context/MusicPlayerContext';
+import { ThemeProvider } from './context/ThemeProvider';
 import PlayerPage from './page/player';
 import ListPage from './page/list';
 import Header from './components/header';
@@ -69,16 +70,18 @@ const App = () => {
 };
 
 const Root = () => (
-    <MusicPlayerProvider>
-        <HashRouter>
-            <Routes>
-                <Route path="/" element={<App />}>
-                    <Route index element={<PlayerPage />} />
-                    <Route path="list" element={<ListPage />} />
-                </Route>
-            </Routes>
-        </HashRouter>
-    </MusicPlayerProvider>
+    <ThemeProvider>
+        <MusicPlayerProvider>
+            <HashRouter>
+                <Routes>
+                    <Route path="/" element={<App />}>
+                        <Route index element={<PlayerPage />} />
+                        <Route path="list" element={<ListPage />} />
+                    </Route>
+                </Routes>
+            </HashRouter>
+        </MusicPlayerProvider>
+    </ThemeProvider>
 );
 
 export default Root;

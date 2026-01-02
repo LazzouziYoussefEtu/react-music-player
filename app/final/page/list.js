@@ -16,7 +16,7 @@ const List = () => {
     });
 
     return (
-        <ul>
+        <ul className="list-group">
             { items }
         </ul>
     );
