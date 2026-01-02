@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Progress from './progress';
 import { MusicPlayerContext } from '../context/MusicPlayerContext';
-import './footer.less';
+
 
 const Footer = () => {
     const {

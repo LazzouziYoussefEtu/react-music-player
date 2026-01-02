@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import './progress.less';
 
 const Progress = ({ progress, onProgressChange, barColor = '#2f9842' }) => {
     const progressBarRef = useRef(null);

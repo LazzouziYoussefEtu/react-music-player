@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Progress from '../components/progress';
 import { Link } from 'react-router-dom';
 import { MusicPlayerContext } from '../context/MusicPlayerContext';
-import './player.less';
+
 
 const Player = () => {
     const { 

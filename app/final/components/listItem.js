@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { MusicPlayerContext } from '../context/MusicPlayerContext';
-import './listitem.less';
+
 
 const ListItem = ({ data, focus }) => {
     const { playMusic } = useContext(MusicPlayerContext);

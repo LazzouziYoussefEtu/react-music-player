@@ -1,5 +1,5 @@
 import React from 'react';
-import './logo.less';
+
 
 const Logo = () => {
     return (
