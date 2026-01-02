@@ -40,28 +40,13 @@ module.exports = {
             inject: 'body'
         })
     ],
-    // Global ignore
-    watchOptions: {
-        ignored: ['**/node_modules', '**/data/**'],
-    },
     devServer: {
-        static: [
-            {
-                directory: path.join(__dirname, 'dist'),
-            },
-            {
-                directory: path.join(__dirname, '.'),
-                // Specific ignore for the static server watcher
-                watch: {
-                    ignored: /data/,
-                }
-            }
-        ],
+        static: {
+            directory: path.join(__dirname, '.'),
+        },
         historyApiFallback: true,
         port: 3000,
-        hot: true,
-        client: {
-            overlay: false,
-        }
+        hot: false, // Disable Hot Module Replacement
+        liveReload: false // Explicitly disable live reload
     }
 };

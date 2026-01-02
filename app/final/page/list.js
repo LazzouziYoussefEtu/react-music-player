@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import ListItem from '../components/listItem';
-import { useOutletContext } from 'react-router-dom';
+import { MusicPlayerContext } from '../context/MusicPlayerContext';
 
 const List = () => {
-    const { musicList, currentMusicItem } = useOutletContext();
+    const { musicList, currentMusicItem } = useContext(MusicPlayerContext);
 
     const items = musicList.map((item) => {
         return (

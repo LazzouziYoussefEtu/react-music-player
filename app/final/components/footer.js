@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Progress from './progress';
+import { MusicPlayerContext } from '../context/MusicPlayerContext';
 import './footer.less';
 
-const Footer = ({ 
-    currentItem, 
-    isPlaying, 
-    progress, 
-    volume, 
-    repeatType, 
-    onPlayPause, 
-    onNext, 
-    onPrev, 
-    onProgressChange, 
-    onVolumeChange, 
-    onRepeatChange 
-}) => {
+const Footer = () => {
+    const {
+        currentItem, 
+        isPlaying, 
+        progress, 
+        volume, 
+        repeatType, 
+        onPlayPause, 
+        onNext, 
+        onPrev, 
+        onProgressChange, 
+        onVolumeChange, 
+        onRepeatChange 
+    } = useContext(MusicPlayerContext);
+
     if (!currentItem) return null;
 
     return (

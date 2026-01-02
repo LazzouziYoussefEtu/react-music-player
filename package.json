@@ -4,7 +4,7 @@
   "description": "music player build with react and react-router with the help of webpack.",
   "main": "index.js",
   "scripts": {
-    "start": "webpack serve --mode development --open",
+    "start": "webpack serve --mode development --hot",
     "build": "webpack --mode production"
   },
   "keywords": [
@@ -15,7 +15,6 @@
   "author": "musiq",
   "license": "MIT",
   "dependencies": {
-    "pubsub-js": "^1.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"

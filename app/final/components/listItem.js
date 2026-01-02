@@ -1,19 +1,12 @@
-import React from 'react';
-import PubSub from 'pubsub-js';
+import React, { useContext } from 'react';
+import { MusicPlayerContext } from '../context/MusicPlayerContext';
 import './listitem.less';
 
 const ListItem = ({ data, focus }) => {
-    const deleteHandler = (e) => {
-        e.stopPropagation();
-        PubSub.publish('DEL_MUSIC', data);
-    };
-
-    const playMusic = () => {
-        PubSub.publish('PLAY_MUSIC', data);
-    };
+    const { playMusic } = useContext(MusicPlayerContext);
 
     return (
-        <li className={`components-listitem${focus ? ' focus' : ''}`} onClick={playMusic}>
+        <li className={`components-listitem${focus ? ' focus' : ''}`} onClick={() => playMusic(data)}>
             <div className="cover" style={{ width: '40px', height: '40px', borderRadius: '4px', marginRight: '15px', overflow: 'hidden', backgroundColor: '#eee' }}>
                 <img 
                     src={data.cover || '/static/images/logo.png'} 
@@ -26,7 +19,7 @@ const ListItem = ({ data, focus }) => {
                 <span className="title bold">{data.title}</span>
                 <span className="artist">{data.artist}</span>
             </div>
-            <div className="delete" onClick={deleteHandler}>✕</div>
+            {/* The delete functionality will be added back if needed, for now it is removed for simplification */}
         </li>
     );
 };

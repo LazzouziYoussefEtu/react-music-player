@@ -1,0 +1,28 @@
+
+> react-music-player@2.0.0 start
+> webpack serve --mode development --hot
+
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:3000/
+<i> [webpack-dev-server] On Your Network (IPv4): http://192.168.1.103:3000/
+<i> [webpack-dev-server] Content not from webpack is served from '/home/centos_youssef/Documents/Web/react-music-player' directory
+<i> [webpack-dev-server] 404s will fallback to '/index.html'
+asset bundle.js 1.79 MiB [emitted] (name: main)
+asset index.html 719 bytes [emitted]
+runtime modules 28 KiB 14 modules
+modules by path ./node_modules/ 1.52 MiB 44 modules
+modules by path ./app/final/ 68.5 KiB
+  modules by path ./app/final/components/ 37.9 KiB 14 modules
+  modules by path ./app/final/page/ 8.28 KiB 4 modules
+  modules by path ./app/final/*.js 9.26 KiB 2 modules
+  modules by path ./app/final/context/*.js 12.9 KiB
+    ./app/final/context/MusicPlayerProvider.js 12.3 KiB [built] [code generated]
+    ./app/final/context/MusicPlayerContext.js 549 bytes [built] [code generated]
+  ./app/final/utils/util.js 104 bytes [built] [code generated]
+  ./app/final/config/apiConfig.js 50 bytes [built] [code generated]
+
+WARNING in ./app/final/Root.js 14:31-49
+export 'MusicPlayerContext' (imported as 'MusicPlayerContext') was not found in './context/MusicPlayerProvider' (possible exports: MusicPlayerProvider)
+ @ ./app/final/index.js 3:0-26 6:45-49
+
+webpack 5.104.1 compiled with 1 warning in 2629 ms
