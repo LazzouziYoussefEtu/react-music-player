@@ -1,24 +1,24 @@
-import React from 'react';
-require('./progress.less');
+import React, { useRef } from 'react';
+import './progress.less';
 
-let Progress = React.createClass({
-	getDefaultProps() {
-		return {
-			barColor: '#2f9842'
-		}
-	},
-	changeProgress(e) {
-		let progressBar = this.refs.progressBar;
-		let progress = (e.clientX - progressBar.getBoundingClientRect().left) / progressBar.clientWidth;
-		this.props.onProgressChange && this.props.onProgressChange(progress);
-	},
-    render() {
-        return (
-        	<div className="components-progress" ref="progressBar" onClick={this.changeProgress}>
-        		<div className="progress" style={{width: `${this.props.progress}%`, background: this.props.barColor}}></div>
-        	</div>
-        );
-    }
-});
+const Progress = ({ progress, onProgressChange, barColor = '#2f9842' }) => {
+    const progressBarRef = useRef(null);
+
+    const changeProgress = (e) => {
+        const progressBar = progressBarRef.current;
+        if (progressBar) {
+            const newProgress = (e.clientX - progressBar.getBoundingClientRect().left) / progressBar.clientWidth;
+            if (onProgressChange) {
+                onProgressChange(newProgress);
+            }
+        }
+    };
+
+    return (
+        <div className="components-progress" ref={progressBarRef} onClick={changeProgress}>
+            <div className="progress" style={{ width: `${progress}%`, background: barColor }}></div>
+        </div>
+    );
+};
 
 export default Progress;

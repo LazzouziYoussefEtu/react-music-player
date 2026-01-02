@@ -1,23 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-let Button = React.createClass({
-	getInitialState() {
-		return {		
-			count: 0
-		}
-	},
-	counterHandler() {
-		this.setState({
-			count: this.state.count + 1
-		});
-	},
-    render() {
-        return (
-        	<div>
-	            <button onClick={this.counterHandler}>Count {this.state.count}</button>
-        	</div>
-        );
-    }
-});
+const Button = () => {
+    const [count, setCount] = useState(0);
+
+    const counterHandler = () => {
+        setCount(count + 1);
+    };
+
+    return (
+        <div>
+            <button onClick={counterHandler}>Count {count}</button>
+        </div>
+    );
+};
 
 export default Button;

@@ -1,23 +1,24 @@
 import React from 'react';
-import { MUSIC_LIST } from '../config/config';
-import ListItem from '../components/listitem';
+import ListItem from '../components/listItem';
+import { useOutletContext } from 'react-router-dom';
 
-let List = React.createClass({
-    render() {
-    	let Items = this.props.musicList.map((item) => {
-    		return (
-    			<ListItem
-    				key={item.id}
-    				data={item}
-    			></ListItem>
-    		);
-    	});
+const List = () => {
+    const { musicList } = useOutletContext();
+
+    const items = musicList.map((item) => {
         return (
-            <ul className="mt20">
-                { Items }
-            </ul>
+            <ListItem
+                key={item.id}
+                data={item}
+            />
         );
-    }
-});
+    });
+
+    return (
+        <ul className="mt20">
+            { items }
+        </ul>
+    );
+};
 
 export default List;

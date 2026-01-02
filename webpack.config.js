@@ -1,61 +1,48 @@
-'use strict';
-
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    devtool: 'eval-source-map',
-    entry: [
-        'webpack-dev-server/client?http://localhost:3000',
-        'webpack/hot/only-dev-server',
-        'react-hot-loader/patch',
-        path.join(__dirname, 'app/final/index.js')
-    ],
+    entry: './app/final/index.js',
     output: {
-        path: path.join(__dirname, '/dist/'),
-        filename: '[name].js',
+        path: path.join(__dirname, '/dist'),
+        filename: 'bundle.js',
         publicPath: '/'
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-          template: './app/index.tpl.html',
-          inject: 'body',
-          filename: './index.html'
-        }),
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
-        new webpack.DefinePlugin({
-          'process.env.NODE_ENV': JSON.stringify('development')
-        })
-    ],
+    resolve: {
+        extensions: ['.js', '.json', '.jsx']
+    },
     module: {
-        resolve:{
-            extensions:['','.js','.json']
-        },        
-        loaders: [
+        rules: [
             {
-              test: /\.js$/,
-              exclude: /node_modules/,
-              loader: "babel-loader",
-              query:
-                {
-                  presets:['react','es2015']
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env', '@babel/preset-react']
+                    }
                 }
             },
             {
-                test: /\.json?$/,
-                loader: 'json'
-            },
-            {
                 test: /\.css$/,
-                loader: "style!css"
+                use: ['style-loader', 'css-loader']
             },
             {
-                test: /\.less/,
-                loader: 'style-loader!css-loader!less-loader'
+                test: /\.less$/,
+                use: ['style-loader', 'css-loader', 'less-loader']
             }
         ]
+    },
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: './app/index.tpl.html',
+            filename: 'index.html',
+            inject: 'body'
+        })
+    ],
+    devServer: {
+        static: './dist',
+        historyApiFallback: true,
+        port: 3000
     }
 };

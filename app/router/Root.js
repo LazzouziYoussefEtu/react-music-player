@@ -1,71 +1,63 @@
-import React, { render } from 'react';
-import { Router, IndexRoute, Link, Route, browserHistory, hashHistory} from 'react-router';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { HashRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { MUSIC_LIST } from './config/config';
-let PubSub = require('pubsub-js');
+import PubSub from 'pubsub-js';
 
 import PlayerPage from './page/player';
-import listPage from './page/list';
-import Logo from './components/logo'
+import ListPage from './page/list';
+import Logo from './components/logo';
 
+const App = () => {
+    const [musicList, setMusicList] = useState(MUSIC_LIST);
+    const [currentMusicItem, setCurrentMusicItem] = useState(MUSIC_LIST[0]);
 
-let App = React.createClass({
-	componentDidMount() {
-		$("#player").jPlayer({
-			supplied: "mp3",
-			wmode: "window",
-			useStateClassSkin: true
-		});
-		this.playMusic(MUSIC_LIST[0]);
-		PubSub.subscribe('PLAY_MUSIC', (msg, item) => {
-			this.playMusic(item);
-		});
-		PubSub.subscribe('DEL_MUSIC', (msg, item) => {
-			this.setState({
-				musicList: this.state.musicList.filter((music) => {
-					return music !== item;
-				})
-			});
-		});		
-	},
-	componentWillUnmount() {
-		PubSub.unsubscribe('PLAY_MUSIC');
-		PubSub.unsubscribe('DEL_MUSIC');
-	},
-	getInitialState() {
-		return {
-			musicList: MUSIC_LIST,
-			currentMusitItem: {}
-		}
-	},	
-	playMusic(item) {
-		$("#player").jPlayer("setMedia", {
-			mp3: item.file
-		}).jPlayer('play');
-		this.setState({
-			currentMusitItem: item
-		});
-	},
-    render() {
-        return (
-            <div className="container">
-            	<Logo></Logo>
-            	{React.cloneElement(this.props.children, {musicList: this.state.musicList, currentMusitItem: this.state.currentMusitItem})}
-            </div>
-        );
-    }
-});
+    const playMusic = useCallback((item) => {
+        $("#player").jPlayer("setMedia", {
+            mp3: item.file
+        }).jPlayer('play');
+        setCurrentMusicItem(item);
+    }, []);
 
-let Root = React.createClass({
-	render() {
-	    return (
-		    <Router history={hashHistory}>
-		        <Route path="/" component={App}>
-		            <IndexRoute component={PlayerPage}/>
-		            <Route path="/list" component={listPage} />
-		        </Route>
-		    </Router>
-		);
-	}
-});
+    useEffect(() => {
+        $("#player").jPlayer({
+            supplied: "mp3",
+            wmode: "window",
+            useStateClassSkin: true
+        });
+
+        playMusic(currentMusicItem);
+
+        const playToken = PubSub.subscribe('PLAY_MUSIC', (msg, item) => {
+            playMusic(item);
+        });
+
+        const delToken = PubSub.subscribe('DEL_MUSIC', (msg, item) => {
+            setMusicList(prevList => prevList.filter(music => music !== item));
+        });
+
+        return () => {
+            PubSub.unsubscribe(playToken);
+            PubSub.unsubscribe(delToken);
+        };
+    }, []); // Run once on mount
+
+    return (
+        <div className="container">
+            <Logo />
+            <Outlet context={{ musicList, currentMusicItem }} />
+        </div>
+    );
+};
+
+const Root = () => (
+    <HashRouter>
+        <Routes>
+            <Route path="/" element={<App />}>
+                <Route index element={<PlayerPage />} />
+                <Route path="list" element={<ListPage />} />
+            </Route>
+        </Routes>
+    </HashRouter>
+);
 
 export default Root;
