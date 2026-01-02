@@ -4,6 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const YTMusic = require('ytmusic-api');
+const ytdl = require('@distube/ytdl-core');
 const app = express();
 const PORT = 8080;
 
@@ -18,10 +19,9 @@ let ytInitialized = false;
 
 app.use(cors());
 app.use(express.json());
-// Serve static files
 app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Initialize Database in the data subfolder
+// Initialize Database
 const db = new sqlite3.Database('./data/music.db', (err) => {
     if (err) {
         console.error('Error opening database', err.message);
@@ -44,35 +44,23 @@ function findMp3Files(dir, fileList = []) {
         files.forEach(file => {
             const filePath = path.join(dir, file);
             const stat = fs.statSync(filePath);
-            if (stat.isDirectory()) {
-                findMp3Files(filePath, fileList);
-            }
-            else {
-                if (path.extname(file).toLowerCase() === '.mp3') {
-                    fileList.push(filePath);
-                }
-            }
+            if (stat.isDirectory()) findMp3Files(filePath, fileList);
+            else if (path.extname(file).toLowerCase() === '.mp3') fileList.push(filePath);
         });
-    } catch (e) {
-        console.error("Error reading directory:", dir, e.message);
-    }
+    } catch (e) { console.error("Error reading directory:", dir, e.message); }
     return fileList;
 }
 
 // API: Scan Directory
 app.post('/api/scan', (req, res) => {
     const { dirPath } = req.body;
-    if (!dirPath || !fs.existsSync(dirPath)) {
-        return res.status(400).json({ error: 'Invalid directory path' });
-    }
-
+    if (!dirPath || !fs.existsSync(dirPath)) return res.status(400).json({ error: 'Invalid directory path' });
     try {
         const mp3Files = findMp3Files(dirPath);
         db.serialize(() => {
             db.run("BEGIN TRANSACTION");
             db.run("DELETE FROM music");
             db.run("DELETE FROM sqlite_sequence WHERE name='music'");
-
             const stmt = db.prepare("INSERT INTO music (title, artist, file_path, cover) VALUES (?, ?, ?, ?)");
             mp3Files.forEach(filePath => {
                 const fileName = path.basename(filePath, '.mp3');
@@ -84,13 +72,10 @@ app.post('/api/scan', (req, res) => {
                 else res.json({ message: `Scanned and added ${mp3Files.length} songs.`, count: mp3Files.length });
             });
         });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to scan directory' });
-    }
+    } catch (error) { res.status(500).json({ error: 'Failed to scan directory' }); }
 });
 
-// API: Get Music List
+// API: Get Local Music List
 app.get('/api/music', (req, res) => {
     db.all("SELECT * FROM music", [], (err, rows) => {
         if (err) res.status(400).json({ error: err.message });
@@ -107,57 +92,85 @@ app.get('/api/music', (req, res) => {
     });
 });
 
-// API: Thumbnail Proxy
+// API: Search Online (YTM)
+app.get('/api/search-online', async (req, res) => {
+    const { q } = req.query;
+    try {
+        if (!ytInitialized) { await ytmusic.initialize(); ytInitialized = true; }
+        const songs = await ytmusic.searchSongs(q);
+        res.json(songs.map(s => ({
+            id: `yt_${s.videoId}`, // Virtual ID
+            title: s.name,
+            artist: s.artist.name || (s.artists && s.artists[0] ? s.artists[0].name : 'Unknown Artist'),
+            file: `http://localhost:${PORT}/api/stream-online/${s.videoId}`,
+            cover: s.thumbnails[s.thumbnails.length - 1].url,
+            isOnline: true
+        })));
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// API: Stream Online (Using @distube/ytdl-core with TV Headers)
+app.get('/api/stream-online/:videoId', async (req, res) => {
+    const videoId = req.params.videoId;
+    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    console.log("Streaming URL (TV headers):", url);
+    
+    const requestOptions = {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/2.2 Chrome/63.0.3239.150 TV Safari/537.36',
+        }
+    };
+
+    try {
+        const info = await ytdl.getInfo(url, { requestOptions });
+        const audioFormat = ytdl.chooseFormat(info.formats, { filter: 'audioonly', quality: 'highestaudio' });
+        
+        if (!audioFormat || !audioFormat.url) {
+            throw new Error("No valid audio format found");
+        }
+
+        res.header('Content-Type', 'audio/mpeg');
+        ytdl(url, {
+            format: audioFormat,
+            requestOptions
+        }).pipe(res);
+
+    } catch (error) { 
+        console.error("Stream error for videoId:", videoId, error.message);
+        if (!res.headersSent) {
+            res.status(500).send(error.message);
+        }
+    }
+});
+
+// API: Thumbnail Proxy (Existing)
 app.get('/api/cover/:id', (req, res) => {
     const id = req.params.id;
     db.get("SELECT title, artist, cover FROM music WHERE id = ?", [id], async (err, row) => {
         if (err || !row) return res.redirect('/static/images/logo.png');
-        
-        // If it's already a high-res Google URL, redirect directly
-        if (row.cover && row.cover.includes('googleusercontent.com')) {
-            return res.redirect(row.cover);
-        }
-        
-        // If it's the broken clouddn URL, we definitely need to fetch
-        // (But we don't redirect to it even if fetch fails)
-        
+        if (row.cover && row.cover.includes('googleusercontent.com')) return res.redirect(row.cover);
         try {
             const query = `${row.title} ${row.artist !== 'Unknown Artist' ? row.artist : ''}`;
-            if (!ytInitialized) {
-                await ytmusic.initialize();
-                ytInitialized = true;
-            }
+            if (!ytInitialized) { await ytmusic.initialize(); ytInitialized = true; }
             const songs = await ytmusic.searchSongs(query);
             if (songs && songs.length > 0) {
-                const bestMatch = songs[0];
-                const highResCover = bestMatch.thumbnails[bestMatch.thumbnails.length - 1].url.split('=')[0] + '=w500-h500';
-                
+                const highResCover = songs[0].thumbnails[songs[0].thumbnails.length - 1].url.split('=')[0] + '=w500-h500';
                 db.run("UPDATE music SET cover = ? WHERE id = ?", [highResCover, id]);
                 return res.redirect(highResCover);
             }
-        } catch (error) {
-            console.error("Cover fetch failed for id:", id, error.message);
-        }
-        
-        // NEVER redirect to clouddn. Always fallback to logo.
+        } catch (e) {}
         res.redirect('/static/images/logo.png');
     });
 });
 
-// API: Stream Music
+// API: Stream Local Music
 app.get('/api/stream/:id', (req, res) => {
     const id = req.params.id;
     db.get("SELECT file_path FROM music WHERE id = ?", [id], (err, row) => {
-        if (err || !row) {
-            res.status(404).send('File not found');
-            return;
-        }
-        const filePath = row.file_path;
-        if (fs.existsSync(filePath)) res.sendFile(filePath);
+        if (err || !row) return res.status(404).send('File not found');
+        if (fs.existsSync(row.file_path)) res.sendFile(row.file_path);
         else res.status(404).send('File not found on disk');
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Backend server running on http://localhost:${PORT}`));

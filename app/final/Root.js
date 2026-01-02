@@ -8,6 +8,7 @@ import ListPage from './page/list';
 import Header from './components/header';
 import Footer from './components/footer';
 import Logo from './components/logo';
+import { API_BASE_URL } from './config/apiConfig';
 
 const App = () => {
     const [musicList, setMusicList] = useState([]);
@@ -30,7 +31,7 @@ const App = () => {
 
     const fetchMusic = async (silent = false) => {
         try {
-            const response = await fetch('http://localhost:8080/api/music');
+            const response = await fetch(`${API_BASE_URL}/api/music`);
             const data = await response.json();
             if (data && Array.isArray(data) && data.length > 0) {
                 setMusicList(data);
@@ -53,7 +54,7 @@ const App = () => {
         if (!path) return alert("Please enter a path");
         setIsScanning(true);
         try {
-            const response = await fetch('http://localhost:8080/api/scan', {
+            const response = await fetch(`${API_BASE_URL}/api/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ dirPath: path })
@@ -118,7 +119,8 @@ const App = () => {
         if (musicList.length === 0) return;
         if (repeatType === 'once') {
             playMusic(currentMusicItemRef.current);
-        } else {
+        }
+        else {
             playNext();
         }
     }, [repeatType, musicList, playNext, playMusic]);
@@ -174,7 +176,7 @@ const App = () => {
 };
 
 const Root = () => (
-    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <HashRouter>
         <Routes>
             <Route path="/" element={<App />}>
                 <Route index element={<PlayerPage />} />
