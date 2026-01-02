@@ -21,4 +21,4 @@ modules by path ./app/final/ 68.9 KiB
     ./app/final/context/MusicPlayerContext.js 549 bytes [built] [code generated]
   ./app/final/utils/util.js 104 bytes [built] [code generated]
   ./app/final/config/apiConfig.js 50 bytes [built] [code generated]
-webpack 5.104.1 compiled successfully in 5023 ms
+webpack 5.104.1 compiled successfully in 4956 ms
