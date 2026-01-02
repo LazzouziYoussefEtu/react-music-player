@@ -41,7 +41,15 @@ module.exports = {
         })
     ],
     devServer: {
-        static: './dist',
+        // Serve content from the project root so /static works
+        static: [
+            {
+                directory: path.join(__dirname, 'dist'),
+            },
+            {
+                directory: path.join(__dirname, '.'), // Serves static folder
+            }
+        ],
         historyApiFallback: true,
         port: 3000
     }

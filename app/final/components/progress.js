@@ -7,7 +7,12 @@ const Progress = ({ progress, onProgressChange, barColor = '#2f9842' }) => {
     const changeProgress = (e) => {
         const progressBar = progressBarRef.current;
         if (progressBar) {
-            const newProgress = (e.clientX - progressBar.getBoundingClientRect().left) / progressBar.clientWidth;
+            const rect = progressBar.getBoundingClientRect();
+            let newProgress = (e.clientX - rect.left) / rect.width;
+            
+            // Clamp value between 0 and 1
+            newProgress = Math.max(0, Math.min(1, newProgress));
+            
             if (onProgressChange) {
                 onProgressChange(newProgress);
             }

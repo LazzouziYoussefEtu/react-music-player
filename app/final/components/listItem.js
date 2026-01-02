@@ -14,11 +14,17 @@ const ListItem = ({ data, focus }) => {
 
     return (
         <li 
-            className={`row components-listitem${focus ? ' focus' : ''}`} 
+            className={`components-listitem${focus ? ' focus' : ''}`} 
             onClick={playMusic}
         >
-            <p><span className="bold">{data.title}</span>  -  {data.artist}</p>
-            <p className="-col-auto delete" onClick={deleteHandler}></p>
+            <div className="cover">
+                <img src={data.cover || 'http://via.placeholder.com/40'} alt={data.title} />
+            </div>
+            <div className="info">
+                <span className="title bold">{data.title}</span>
+                <span className="artist">{data.artist}</span>
+            </div>
+            <div className="delete" onClick={deleteHandler}>✕</div>
         </li>
     );
 };
