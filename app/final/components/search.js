@@ -6,6 +6,7 @@ const Search = ({ musicList = [], onPlayMusic }) => {
     const [showResults, setShowResults] = useState(false);
     const [onlineResults, setOnlineResults] = useState([]);
     const [isSearchingOnline, setIsSearchingOnline] = useState(false);
+    const [downloadingId, setDownloadingId] = useState(null);
     const searchRef = useRef(null);
 
     // Filter local songs
@@ -29,6 +30,38 @@ const Search = ({ musicList = [], onPlayMusic }) => {
         }
     };
 
+    const handleDownload = async (item, e) => {
+        e.stopPropagation();
+        setDownloadingId(item.id);
+        const dirPath = localStorage.getItem('musicPath');
+        if (!dirPath) {
+            alert('Please set a music path first.');
+            setDownloadingId(null);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/download`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    videoId: item.videoId,
+                    title: item.title,
+                    artist: item.artist,
+                    cover: item.cover,
+                    dirPath: dirPath
+                })
+            });
+            const result = await response.json();
+            alert(result.message || 'Download complete!');
+        } catch (error) {
+            console.error('Download failed', error);
+            alert('Download failed.');
+        } finally {
+            setDownloadingId(null);
+        }
+    };
+
     // Close results when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -48,25 +81,27 @@ const Search = ({ musicList = [], onPlayMusic }) => {
     };
 
     return (
-        <div ref={searchRef} className="flex flex-col" style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
+        <div ref={searchRef} className="dropdown" style={{ width: '100%', maxWidth: '400px' }}>
             {/* Search Input */}
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(107, 114, 128, 0.3)', paddingLeft: '10px', borderRadius: '6px', height: '40px', background: 'white' }}>
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="m15.75 15.75-3.262-3.262M14.25 8.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0" stroke="#6B7280" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+            <div className="input-group">
+                <span className="input-group-text bg-white border-end-0">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m15.75 15.75-3.262-3.262M14.25 8.25a6 6 0 1 1-12 0 6 6 0 0 1 12 0" stroke="#6B7280" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </span>
                 <input 
                     type="text" 
+                    className="form-control border-start-0"
                     placeholder="Search local or online..." 
                     value={query}
                     onChange={(e) => { setQuery(e.target.value); setShowResults(true); }}
                     onFocus={() => setShowResults(true)}
-                    style={{ border: 'none', outline: 'none', padding: '5px 10px', fontSize: '14px', flex: 1 }}
                 />
                 {query.trim() && (
                     <button 
+                        className="btn btn-success"
                         onClick={handleSearchOnline}
                         disabled={isSearchingOnline}
-                        style={{ background: '#2f9842', color: 'white', border: 'none', padding: '0 15px', height: '100%', borderTopRightRadius: '5px', borderBottomRightRadius: '5px', cursor: 'pointer', fontSize: '12px' }}
                     >
                         {isSearchingOnline ? '...' : 'Global'}
                     </button>
@@ -75,43 +110,71 @@ const Search = ({ musicList = [], onPlayMusic }) => {
 
             {/* Results Dropdown */}
             {showResults && (query.trim() !== '' || onlineResults.length > 0) && (
-                <div style={{ position: 'absolute', top: '45px', left: 0, right: 0, background: 'white', border: '1px solid rgba(107, 114, 128, 0.3)', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: '400px', overflowY: 'auto', zIndex: 1000 }}>
+                <ul className="dropdown-menu show shadow-lg w-100" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     
                     {/* Local Results */}
                     {localResults.length > 0 && (
-                        <div>
-                            <h5 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 15px', margin: 0, color: '#999', background: '#f9f9f9' }}>Local Library</h5>
+                        <>
+                            <li><h6 className="dropdown-header bg-light">Local Library</h6></li>
                             {localResults.map(item => (
-                                <div key={item.id} onClick={() => handleSelectSong(item)} style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                    <div style={{ fontSize: '14px', color: '#333' }}><span className="bold">{item.title}</span></div>
-                                    <div style={{ fontSize: '12px', color: '#666' }}>{item.artist}</div>
-                                </div>
+                                <li key={item.id}>
+                                    <button className="dropdown-item d-flex align-items-center py-2" onClick={() => handleSelectSong(item)}>
+                                        <div className="flex-grow-1">
+                                            <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{item.title}</div>
+                                            <div className="text-muted" style={{ fontSize: '12px' }}>{item.artist}</div>
+                                        </div>
+                                    </button>
+                                </li>
                             ))}
-                        </div>
+                        </>
                     )}
 
                     {/* Online Results */}
                     {onlineResults.length > 0 && (
-                        <div>
-                            <h5 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 15px', margin: 0, color: '#2f9842', background: '#f0fdf4' }}>YouTube Music</h5>
+                        <>
+                            {localResults.length > 0 && <li><hr className="dropdown-divider" /></li>}
+                            <li><h6 className="dropdown-header bg-success bg-opacity-10 text-success">YouTube Music</h6></li>
                             {onlineResults.map(item => (
-                                <div key={item.id} onClick={() => handleSelectSong(item)} style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                    <img src={item.cover} style={{ width: '30px', height: '30px', borderRadius: '3px', marginRight: '10px' }} />
-                                    <div>
-                                        <div style={{ fontSize: '14px', color: '#333' }}><span className="bold">{item.title}</span></div>
-                                        <div style={{ fontSize: '12px', color: '#666' }}>{item.artist} (Online)</div>
+                                <li key={item.id}>
+                                    <div className="dropdown-item d-flex align-items-center py-2 gap-3">
+                                        <img 
+                                            src={item.cover} 
+                                            alt="" 
+                                            className="rounded" 
+                                            style={{ width: '35px', height: '35px', objectFit: 'cover' }} 
+                                            onClick={() => handleSelectSong(item)}
+                                        />
+                                        <div className="flex-grow-1 cursor-pointer" onClick={() => handleSelectSong(item)} style={{ cursor: 'pointer' }}>
+                                            <div className="fw-bold text-dark" style={{ fontSize: '14px' }}>{item.title}</div>
+                                            <div className="text-muted" style={{ fontSize: '12px' }}>{item.artist} (Online)</div>
+                                        </div>
+                                        <button 
+                                            className="btn btn-sm btn-outline-success border-0"
+                                            onClick={(e) => handleDownload(item, e)}
+                                            disabled={downloadingId === item.id}
+                                            title="Download to local library"
+                                        >
+                                            {downloadingId === item.id ? (
+                                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            ) : (
+                                                <svg width="16" height="16" fill="currentColor" className="bi bi-download" viewBox="0 0 16 16">
+                                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                                                </svg>
+                                            )}
+                                        </button>
                                     </div>
-                                </div>
+                                </li>
                             ))}
-                        </div>
+                        </>
                     )}
 
                     {localResults.length === 0 && onlineResults.length === 0 && (
-                        <p style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '13px' }}>
+                        <li className="p-4 text-center text-muted">
                             No local results. Try clicking <b>Global</b> search.
-                        </p>
+                        </li>
                     )}
-                </div>
+                </ul>
             )}
         </div>
     );

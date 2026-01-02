@@ -13,7 +13,7 @@ asset index.html 719 bytes [emitted]
 runtime modules 28.1 KiB 14 modules
 javascript modules 1.8 MiB
   modules by path ./node_modules/ 1.75 MiB 47 modules
-  modules by path ./app/final/ 52.9 KiB 17 modules
+  modules by path ./app/final/ 54.9 KiB 17 modules
 asset modules 5.03 KiB
   data:image/svg+xml,%3csvg xmlns=%27.. 281 bytes [built] [code generated]
   data:image/svg+xml,%3csvg xmlns=%27.. 281 bytes [built] [code generated]
@@ -22,4 +22,4 @@ asset modules 5.03 KiB
   data:image/svg+xml,%3csvg xmlns=%27.. 271 bytes [built] [code generated]
   data:image/svg+xml,%3csvg xmlns=%27.. 181 bytes [built] [code generated]
   + 13 modules
-webpack 5.104.1 compiled successfully in 4913 ms
+webpack 5.104.1 compiled successfully in 3722 ms
