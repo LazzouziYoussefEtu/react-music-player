@@ -238,7 +238,12 @@ const App = () => {
     // 5. Main Render
     return (
         <div className="container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-            <Header onScan={handleScan} currentPath={localStorage.getItem('musicPath')} />
+            <Header 
+                onScan={handleScan} 
+                currentPath={localStorage.getItem('musicPath')} 
+                musicList={musicList}
+                onPlayMusic={playMusic}
+            />
             
             <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '90px', position: 'relative' }}>
                  <Outlet context={{ musicList, currentMusicItem, repeatType, playMusic, playNext }} />

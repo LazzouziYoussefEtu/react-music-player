@@ -27,18 +27,22 @@ const db = new sqlite3.Database('./music.db', (err) => {
 
 // Helper to recursively find files
 function findMp3Files(dir, fileList = []) {
-    const files = fs.readdirSync(dir);
-    files.forEach(file => {
-        const filePath = path.join(dir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isDirectory()) {
-            findMp3Files(filePath, fileList);
-        } else {
-            if (path.extname(file).toLowerCase() === '.mp3') {
-                fileList.push(filePath);
+    try {
+        const files = fs.readdirSync(dir);
+        files.forEach(file => {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+                findMp3Files(filePath, fileList);
+            } else {
+                if (path.extname(file).toLowerCase() === '.mp3') {
+                    fileList.push(filePath);
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.error("Error reading directory:", dir, e.message);
+    }
     return fileList;
 }
 
@@ -50,23 +54,37 @@ app.post('/api/scan', (req, res) => {
     }
 
     try {
+        // 1. Find all files first
         const mp3Files = findMp3Files(dirPath);
-        const stmt = db.prepare("INSERT INTO music (title, artist, file_path, cover) VALUES (?, ?, ?, ?)");
         
+        // 2. Clear and Insert in a single serialized block
         db.serialize(() => {
-            // Clear existing for simplicity, or we could upsert. Let's clear for now to sync with folder.
-            // db.run("DELETE FROM music"); 
-            // Actually, appending is safer, let's just append for now.
+            db.run("BEGIN TRANSACTION");
+            
+            // Explicitly clear the table
+            db.run("DELETE FROM music");
+            // Optional: Reset autoincrement
+            db.run("DELETE FROM sqlite_sequence WHERE name='music'");
 
+            const stmt = db.prepare("INSERT INTO music (title, artist, file_path, cover) VALUES (?, ?, ?, ?)");
+            
             mp3Files.forEach(filePath => {
                 const fileName = path.basename(filePath, '.mp3');
-                // Simple assumption: filename is title. Artist unknown.
-                stmt.run(fileName, 'Unknown Artist', filePath, 'http://oj4t8z2d5.bkt.clouddn.com/%E9%AD%94%E9%AC%BC%E4%B8%AD%E7%9A%84%E5%A4%A9%E4%BD%BF.jpg'); // Default cover
+                stmt.run(fileName, 'Unknown Artist', filePath, 'http://oj4t8z2d5.bkt.clouddn.com/%E9%AD%94%E9%AC%BC%E4%B8%AD%E7%9A%84%E5%A4%A9%E4%BD%BF.jpg');
             });
-            stmt.finalize();
-        });
 
-        res.json({ message: `Scanned and added ${mp3Files.length} songs.`, count: mp3Files.length });
+            stmt.finalize();
+            
+            db.run("COMMIT", (err) => {
+                if (err) {
+                    console.error("Commit failed", err);
+                    res.status(500).json({ error: 'Database commit failed' });
+                } else {
+                    console.log(`Successfully scanned ${mp3Files.length} files.`);
+                    res.json({ message: `Scanned and added ${mp3Files.length} songs.`, count: mp3Files.length });
+                }
+            });
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to scan directory' });
@@ -80,12 +98,10 @@ app.get('/api/music', (req, res) => {
             res.status(400).json({ error: err.message });
             return;
         }
-        // Transform rows to match the frontend expected format
         const musicList = rows.map(row => ({
             id: row.id,
             title: row.title,
             artist: row.artist,
-            // Construct a streaming URL
             file: `http://localhost:${PORT}/api/stream/${row.id}`,
             cover: row.cover
         }));
