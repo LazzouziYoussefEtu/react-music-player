@@ -40,17 +40,28 @@ module.exports = {
             inject: 'body'
         })
     ],
+    // Global ignore
+    watchOptions: {
+        ignored: ['**/node_modules', '**/data/**'],
+    },
     devServer: {
-        // Serve content from the project root so /static works
         static: [
             {
                 directory: path.join(__dirname, 'dist'),
             },
             {
-                directory: path.join(__dirname, '.'), // Serves static folder
+                directory: path.join(__dirname, '.'),
+                // Specific ignore for the static server watcher
+                watch: {
+                    ignored: /data/,
+                }
             }
         ],
         historyApiFallback: true,
-        port: 3000
+        port: 3000,
+        hot: true,
+        client: {
+            overlay: false,
+        }
     }
 };

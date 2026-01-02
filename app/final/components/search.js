@@ -76,8 +76,6 @@ const Search = ({ musicList = [], onPlayMusic }) => {
                                 onClick={() => handleSelectSong(item)}
                                 className="text-sm text-gray-500 py-1 hover:bg-gray-200/80 cursor-pointer px-4"
                                 style={{ padding: '8px 15px', cursor: 'pointer', margin: 0, fontSize: '14px' }}
-                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                             >
                                 <span className="bold">{item.title}</span> - {item.artist}
                             </p>

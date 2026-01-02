@@ -13,12 +13,14 @@ const ListItem = ({ data, focus }) => {
     };
 
     return (
-        <li 
-            className={`components-listitem${focus ? ' focus' : ''}`} 
-            onClick={playMusic}
-        >
-            <div className="cover">
-                <img src={data.cover || 'http://via.placeholder.com/40'} alt={data.title} />
+        <li className={`components-listitem${focus ? ' focus' : ''}`} onClick={playMusic}>
+            <div className="cover" style={{ width: '40px', height: '40px', borderRadius: '4px', marginRight: '15px', overflow: 'hidden', backgroundColor: '#eee' }}>
+                <img 
+                    src={data.cover || '/static/images/logo.png'} 
+                    alt={data.title} 
+                    onError={(e) => { e.target.src = '/static/images/logo.png'; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
             </div>
             <div className="info">
                 <span className="title bold">{data.title}</span>
