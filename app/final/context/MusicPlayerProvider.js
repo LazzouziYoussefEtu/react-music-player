@@ -42,8 +42,9 @@ export const MusicPlayerProvider = ({ children }) => {
 
     const playMusic = useCallback((item) => {
         if (!item) return;
-        $("#player").jPlayer("pause");
-        $("#player").jPlayer("setMedia", { mp3: item.file }).jPlayer('play');
+        $("#player").jPlayer("stop"); // Stop and clear current media to prevent AbortError
+        $("#player").jPlayer("setMedia", { mp3: item.file }); // Set new media
+        $("#player").jPlayer('play'); // Then play
         setCurrentMusicItem(item);
     }, []);
 

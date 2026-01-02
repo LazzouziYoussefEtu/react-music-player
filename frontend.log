@@ -13,7 +13,7 @@ asset index.html 719 bytes [emitted]
 runtime modules 28.1 KiB 14 modules
 javascript modules 1.81 MiB
   modules by path ./node_modules/ 1.75 MiB 47 modules
-  modules by path ./app/final/ 59 KiB 21 modules
+  modules by path ./app/final/ 59.1 KiB 21 modules
 asset modules 5.03 KiB
   data:image/svg+xml,%3csvg xmlns=%27.. 281 bytes [built] [code generated]
   data:image/svg+xml,%3csvg xmlns=%27.. 281 bytes [built] [code generated]
@@ -43,4 +43,4 @@ Module not found: Error: Can't resolve './player.less' in '/home/centos_youssef/
 3 errors have detailed information that is not shown.
 Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
 
-webpack 5.104.1 compiled with 3 errors in 5301 ms
+webpack 5.104.1 compiled with 3 errors in 5585 ms
