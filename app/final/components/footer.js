@@ -5,7 +5,7 @@ import './footer.less';
 
 const Footer = () => {
     const {
-        currentItem, 
+        currentMusicItem,
         isPlaying, 
         progress, 
         volume, 
@@ -18,22 +18,22 @@ const Footer = () => {
         onRepeatChange 
     } = useContext(MusicPlayerContext);
 
-    if (!currentItem) return null;
+    if (!currentMusicItem) return null;
 
     return (
         <div className="components-footer row">
             <div className="-col-auto left-info">
                 <div className="cover-img" style={{ width: '50px', height: '50px', borderRadius: '4px', marginRight: '15px', overflow: 'hidden' }}>
                     <img 
-                        src={currentItem.cover || '/static/images/logo.png'} 
-                        alt={currentItem.title} 
+                        src={currentMusicItem.cover || '/static/images/logo.png'} 
+                        alt={currentMusicItem.title} 
                         onError={(e) => { e.target.src = '/static/images/logo.png'; }}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
                 </div>
                 <div className="info-text">
-                    <div className="title bold text-overflow">{currentItem.title}</div>
-                    <div className="artist text-overflow">{currentItem.artist}</div>
+                    <div className="title bold text-overflow">{currentMusicItem.title}</div>
+                    <div className="artist text-overflow">{currentMusicItem.artist}</div>
                 </div>
             </div>
 

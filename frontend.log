@@ -12,8 +12,8 @@ asset bundle.js 1.79 MiB [emitted] (name: main)
 asset index.html 719 bytes [emitted]
 runtime modules 28 KiB 14 modules
 modules by path ./node_modules/ 1.52 MiB 44 modules
-modules by path ./app/final/ 68.9 KiB
-  modules by path ./app/final/components/ 37.9 KiB 14 modules
+modules by path ./app/final/ 69 KiB
+  modules by path ./app/final/components/ 38 KiB 14 modules
   modules by path ./app/final/page/ 8.28 KiB 4 modules
   modules by path ./app/final/*.js 9.31 KiB 2 modules
   modules by path ./app/final/context/*.js 13.2 KiB
@@ -21,4 +21,4 @@ modules by path ./app/final/ 68.9 KiB
     ./app/final/context/MusicPlayerContext.js 549 bytes [built] [code generated]
   ./app/final/utils/util.js 104 bytes [built] [code generated]
   ./app/final/config/apiConfig.js 50 bytes [built] [code generated]
-webpack 5.104.1 compiled successfully in 4956 ms
+webpack 5.104.1 compiled successfully in 5201 ms
