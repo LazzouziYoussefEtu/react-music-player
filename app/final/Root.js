@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { HashRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { MusicPlayerProvider, MusicPlayerContext } from './context/MusicPlayerProvider';
+import { MusicPlayerProvider } from './context/MusicPlayerProvider';
+import { MusicPlayerContext } from './context/MusicPlayerContext';
 import PlayerPage from './page/player';
 import ListPage from './page/list';
 import Header from './components/header';
