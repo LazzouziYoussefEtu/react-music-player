@@ -1,6 +1,6 @@
 import React from 'react';
 import { MUSIC_LIST } from '../config/config';
-import ListItem from '../components/listitem';
+import ListItem from '../components/listItem';
 
 let List = React.createClass({
     render() {
